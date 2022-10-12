@@ -46,29 +46,57 @@ class WorkingFilesView {
 	}
 
 	private async createElements(): Promise<QuickStartContainer1TreeElement[]> {
-		const splitedFileNames = await this.getWorkingBranchChangingFiles();
+		const fileNames = await this.getWorkingBranchChangingFiles();
 
 		let result: Obj[] = [];
 		let level = {result};
+		let temp: QuickStartContainer1TreeElement[] = [];
 
-		splitedFileNames.forEach(path => {
+		console.log(fileNames);
+
+		// splitedFileNames.forEach(path => {
+		// 	path.split('/').reduce((r: any, name, i, a) => {
+		// 		if(!r[name]) {
+		// 			r[name] = {result: []};
+		// 			r.result.push({
+		// 				name,
+		// 				children: r[name].result
+		// 			});
+		// 			// r[name].result.addChild(new QuickStartContainer1TreeElement(name));
+		// 		}
+				
+		// 		return r[name];
+		// 	}, level);
+		// });
+		fileNames.forEach(path => {
 			path.split('/').reduce((r: any, name, i, a) => {
 				if(!r[name]) {
-					r[name] = {result: new QuickStartContainer1TreeElement('hoge')};
-					// r.result.push({
-					// 	name,
-					// 	children: r[name].result
-					// });
-					r[name].result.addChild(new QuickStartContainer1TreeElement(name));
+					r[name] = {result: []};
+					r.result.push({name, children: r[name].result});
 				}
 				
 				return r[name];
 			}, level);
 		});
+
 		console.log(result);
 
-		return splitedFileNames.map(v => new QuickStartContainer1TreeElement(v));
+		result.forEach(value => {
+			temp.push(new QuickStartContainer1TreeElement(value.name));
+			this.put(temp.slice(-1)[0], value.children);
+		});
+		console.log(temp);
+
+		// return splitedFileNames.map(v => new QuickStartContainer1TreeElement(v));
+		return temp;
   }
+
+	private put (element: QuickStartContainer1TreeElement, result: Obj[]) {
+		result.forEach(a => {
+			element.addChild(new QuickStartContainer1TreeElement(a.name));
+			this.put(element.children.slice(-1)[0], a.children);
+		});
+	}
 
 	private execShell (cmd: string) {
 		return new Promise<string>((resolve, reject) => {
@@ -83,7 +111,7 @@ class WorkingFilesView {
 
 	async getWorkingBranchChangingFiles (): Promise<string[]> {
 		try {
-			const result = await this.execShell('cd /Users/takase/dev/live-web && git -c core.quotepath=false diff `git show-branch --merge-base master HEAD` HEAD --name-only');
+			const result = await this.execShell('cd /Users/takaseeito/dev/github.com/2ndPINEW/vscode-working-files && git -c core.quotepath=false diff `git show-branch --merge-base master HEAD` HEAD --name-only');
 			vscode.window.showInformationMessage('result' + result);
 			return result.split('\n');
 		} catch {
