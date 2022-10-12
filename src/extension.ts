@@ -1,26 +1,51 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-working-files" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-working-files.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-working-files!');
+	const disposable = vscode.commands.registerCommand('vscode-working-files.helloWorld', () => {
+		vscode.window.showInformationMessage('Hello World!');
 	});
 
 	context.subscriptions.push(disposable);
+
+	const wf = new WorkingFilesView();
+	vscode.window.registerTreeDataProvider('git-working-files', wf);
+
+	// https://stackoverflow.com/questions/43007267/how-to-run-a-system-command-from-vscode-extension
+	// うごかーん
+	function commentLine(command: string) {
+		const cp = require('child_process');
+		cp.exec(command, (err: any, stdout: any, stderr: any) => {
+				console.log('stdout: ' + stdout);
+				vscode.window.showInformationMessage('stdout: ' + stdout);
+				console.log('stderr: ' + stderr);
+				if (err) {
+						console.log('error: ' + err);
+				}
+		});
+	}
+
+	function getWorkingBranchChangingFiles (): void {
+		commentLine('git -c core.quotepath=false diff `git show-branch --merge-base master HEAD` HEAD --name-only');
+	}
+
+	getWorkingBranchChangingFiles();
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
+
+// git -c core.quotepath=false diff `git show-branch --merge-base master HEAD` HEAD --name-only
+
+class WorkingFilesView {
+	constructor() {
+		//初期値などを定義
+	}
+
+	getTreeItem(element: any) {
+		//ツリーの最小単位を返す
+		return element;
+	}
+
+	getChildren(element: any) {
+		return element;
+	}
+}

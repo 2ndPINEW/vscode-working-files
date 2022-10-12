@@ -19,7 +19,24 @@
 				"command": "vscode-working-files.helloWorld",
 				"title": "Hello World"
 			}
-		]
+		],
+		"viewsContainers": {
+			"activitybar": [
+					{
+							"id": "working-files",
+							"title": "Working files",
+							"icon": "media/icon.svg"
+					}
+			]
+		},
+		"views": {
+			"working-files": [
+					{
+							"id": "git-working-files",
+							"name": "Working files"
+					}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
