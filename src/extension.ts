@@ -2,20 +2,34 @@ import * as vscode from 'vscode';
 import * as cp from "child_process";
 
 export function activate(context: vscode.ExtensionContext) {
-	const disposable = vscode.commands.registerCommand('vscode-working-files.helloWorld', async () => {
-	});
-
-	context.subscriptions.push(disposable);
-
-	vscode.commands.registerCommand('vscode-working-files.openResource', resource => openResource(resource));
+	// const openFile = vscode.commands.registerCommand('vscode-working-files.openFile', (element: QuickStartContainer1TreeElement) => {
+	// 	if (element) {
+	// 		const filePath = getFileFullPath('', element);
+	// 		const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri?.path;
+	// 		if (!filePath || !workspacePath) {
+	// 			vscode.window.showInformationMessage('Working files はファイルを開けません');
+	// 			return;
+	// 		}
+	// 		const path = `${workspacePath}/${filePath}`;
+	// 		try {
+	// 			var openPath = vscode.Uri.parse(path);
+	// 			vscode.workspace.openTextDocument(openPath).then(doc => {
+	// 				vscode.window.showTextDocument(doc);
+	// 			});
+	// 		} catch {
+	// 			vscode.window.showInformationMessage(`次のファイルがひらけませんでした: ${path}`);
+	// 		}
+	// 	}
+	// });
 
 	const wf = new WorkingFilesView();
 	wf.makeRootElements();
-	vscode.window.registerTreeDataProvider('git-working-files', wf);
 
-	function openResource(resource: vscode.Uri): void {
-		vscode.window.showTextDocument(resource);
-	}
+	vscode.commands.registerCommand('vscode-working-files.refreshEntry', () =>
+		wf.makeRootElements()
+  );
+
+	vscode.window.registerTreeDataProvider('git-working-files', wf);
 }
 
 export function deactivate() {}
@@ -31,13 +45,12 @@ class WorkingFilesView {
   }
 
 	async makeRootElements (): Promise<void> {
-		vscode.window.showInformationMessage('make elements');
     this.rootElements = await this.createElements();
 		this.refresh();
 	}
 
 	getTreeItem(element: QuickStartContainer1TreeElement): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    const collapsibleState = element.children.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
+    const collapsibleState = element.children.length > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;
     return new vscode.TreeItem(element.name, collapsibleState);
   }
 
@@ -52,22 +65,6 @@ class WorkingFilesView {
 		let level = {result};
 		let temp: QuickStartContainer1TreeElement[] = [];
 
-		console.log(fileNames);
-
-		// splitedFileNames.forEach(path => {
-		// 	path.split('/').reduce((r: any, name, i, a) => {
-		// 		if(!r[name]) {
-		// 			r[name] = {result: []};
-		// 			r.result.push({
-		// 				name,
-		// 				children: r[name].result
-		// 			});
-		// 			// r[name].result.addChild(new QuickStartContainer1TreeElement(name));
-		// 		}
-				
-		// 		return r[name];
-		// 	}, level);
-		// });
 		fileNames.forEach(path => {
 			path.split('/').reduce((r: any, name, i, a) => {
 				if(!r[name]) {
@@ -79,21 +76,17 @@ class WorkingFilesView {
 			}, level);
 		});
 
-		console.log(result);
-
 		result.forEach(value => {
-			temp.push(new QuickStartContainer1TreeElement(value.name));
+			temp.push(new QuickStartContainer1TreeElement(value.name, value.name));
 			this.put(temp.slice(-1)[0], value.children);
 		});
-		console.log(temp);
 
-		// return splitedFileNames.map(v => new QuickStartContainer1TreeElement(v));
 		return temp;
   }
 
 	private put (element: QuickStartContainer1TreeElement, result: Obj[]) {
 		result.forEach(a => {
-			element.addChild(new QuickStartContainer1TreeElement(a.name));
+			element.addChild(new QuickStartContainer1TreeElement(a.name, a.name));
 			this.put(element.children.slice(-1)[0], a.children);
 		});
 	}
@@ -101,20 +94,31 @@ class WorkingFilesView {
 	private execShell (cmd: string) {
 		return new Promise<string>((resolve, reject) => {
 			cp.exec(cmd, (err, out) => {
-					if (err) {
-						return reject(err);
-					}
-					return resolve(out);
+				if (err) {
+					return reject(err);
+				}
+				return resolve(out);
 			});
 		});
 	};
 
 	async getWorkingBranchChangingFiles (): Promise<string[]> {
 		try {
-			const result = await this.execShell('cd /Users/takaseeito/dev/github.com/2ndPINEW/vscode-working-files && git -c core.quotepath=false diff `git show-branch --merge-base master HEAD` HEAD --name-only');
-			vscode.window.showInformationMessage('result' + result);
-			return result.split('\n');
-		} catch {
+			const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri?.path;
+			await this.execShell(`cd ${workspacePath}`);
+			const result = await this.execShell(`cd ${workspacePath} && git -c core.quotepath=false diff \`git show-branch --merge-base master HEAD\` HEAD --name-only`);
+			const statusResult = await this.execShell(`cd ${workspacePath} && git status --porcelain`);
+			const result2 = statusResult.split('\n').map(line => {
+				const status = line.match(/.. /) ?? [''];
+				return line.replace(status[0], '');
+			});
+
+			return [
+				...result.split('\n'),
+				...result2
+			].filter(fileName => !!fileName);
+		} catch (e) {
+			console.error(e);
 			return [];
 		}
 	}
@@ -129,15 +133,23 @@ interface Obj {
 	children: Obj[]
 }
 
-export class QuickStartContainer1TreeElement {
-
-  private _children: QuickStartContainer1TreeElement[];
+export class QuickStartContainer1TreeElement extends vscode.TreeItem {
+  private _children: QuickStartContainer1TreeElement[] = [];
   private _parent: QuickStartContainer1TreeElement | undefined | null;
+
   constructor(
-    public name: string
+		public name: string,
+    public readonly label: string
   ) {
-    this._children = [];
+    super(label);
   }
+
+	public command = {
+		'command': 'vscode.open',
+		'title': 'open'
+	};
+
+	public resourceUri = vscode.Uri.parse(getFileFullPath('', this));
 
   get parent(): QuickStartContainer1TreeElement | undefined | null {
     return this._parent;
@@ -161,3 +173,12 @@ export class QuickStartContainer1TreeElement {
     }
   }
 }
+
+function getFileFullPath (path: string, obj: QuickStartContainer1TreeElement) {
+	path = path ? `${obj.name}/${path}` : obj.name;
+
+	if (obj.parent) {
+		path = getFileFullPath(path, obj.parent);
+	}
+	return path;
+};

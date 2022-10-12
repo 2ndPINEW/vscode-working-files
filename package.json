@@ -10,24 +10,23 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vscode-working-files.helloWorld",
 		"onView:git-working-files"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vscode-working-files.helloWorld",
-				"title": "Hello World"
+				"command": "vscode-working-files.refreshEntry",
+				"title": "Refresh"
 			}
 		],
 		"viewsContainers": {
 			"activitybar": [
-					{
-							"id": "working-files",
-							"title": "Working files",
-							"icon": "media/icon.svg"
-					}
+				{
+					"id": "working-files",
+					"title": "Working files",
+					"icon": "media/icon.svg"
+				}
 			]
 		},
 		"views": {
@@ -37,6 +36,15 @@
 							"name": "Working files"
 					}
 			]
+		},
+		"menus": {
+			"view/title": [
+        {
+					"command": "vscode-working-files.refreshEntry",
+					"when": "view == git-working-files",
+					"group": "navigation"
+        }
+    ]
 		}
 	},
 	"scripts": {
