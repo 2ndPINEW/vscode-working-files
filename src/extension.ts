@@ -54,15 +54,20 @@ class WorkingFilesView {
 		splitedFileNames.forEach(path => {
 			path.split('/').reduce((r: any, name, i, a) => {
 				if(!r[name]) {
-					r[name] = {result: []};
-					r.result.push({name, children: r[name].result});
+					r[name] = {result: new QuickStartContainer1TreeElement('hoge')};
+					// r.result.push({
+					// 	name,
+					// 	children: r[name].result
+					// });
+					r[name].result.addChild(new QuickStartContainer1TreeElement(name));
 				}
 				
 				return r[name];
 			}, level);
 		});
+		console.log(result);
 
-		return [];
+		return splitedFileNames.map(v => new QuickStartContainer1TreeElement(v));
   }
 
 	private execShell (cmd: string) {
