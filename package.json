@@ -1,0 +1,13 @@
+{
+  "name": "vscode-working-files",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "ssh://git@github.com/2ndPINEW/vscode-working-files.git",
+  "author": "takase <takase@jig.jp>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "generator-code": "^1.7.0",
+    "yo": "^4.3.0"
+  }
+}
