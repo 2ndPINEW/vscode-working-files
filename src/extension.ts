@@ -1,29 +1,28 @@
 import * as vscode from 'vscode';
 import * as cp from "child_process";
+import * as fs from 'fs'; // In NodeJS: 'const fs = require('fs')'
 
 export function activate(context: vscode.ExtensionContext) {
-	// const openFile = vscode.commands.registerCommand('vscode-working-files.openFile', (element: QuickStartContainer1TreeElement) => {
-	// 	if (element) {
-	// 		const filePath = getFileFullPath('', element);
-	// 		const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri?.path;
-	// 		if (!filePath || !workspacePath) {
-	// 			vscode.window.showInformationMessage('Working files はファイルを開けません');
-	// 			return;
-	// 		}
-	// 		const path = `${workspacePath}/${filePath}`;
-	// 		try {
-	// 			var openPath = vscode.Uri.parse(path);
-	// 			vscode.workspace.openTextDocument(openPath).then(doc => {
-	// 				vscode.window.showTextDocument(doc);
-	// 			});
-	// 		} catch {
-	// 			vscode.window.showInformationMessage(`次のファイルがひらけませんでした: ${path}`);
-	// 		}
-	// 	}
-	// });
-
 	const wf = new WorkingFilesView();
 	wf.makeRootElements();
+
+	vscode.workspace.onDidSaveTextDocument(() => {
+		wf.makeRootElements();
+	});
+
+	// -------------------------------------------------
+	// ファイルの操作
+	// -------------------------------------------------
+	vscode.workspace.onDidCreateFiles(() => {
+		wf.makeRootElements();
+	});
+	vscode.workspace.onDidDeleteFiles(() => {
+		wf.makeRootElements();
+	});
+	vscode.workspace.onDidRenameFiles(() => {
+		wf.makeRootElements();
+	});
+
 
 	vscode.commands.registerCommand('vscode-working-files.refreshEntry', () =>
 		wf.makeRootElements()
@@ -51,7 +50,18 @@ class WorkingFilesView {
 
 	getTreeItem(element: QuickStartContainer1TreeElement): vscode.TreeItem | Thenable<vscode.TreeItem> {
     const collapsibleState = element.children.length > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;
-    return new vscode.TreeItem(element.name, collapsibleState);
+    const treeItem = new vscode.TreeItem(element.name, collapsibleState);
+		const filePath = getFileFullPath('', element);
+		const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri?.path;
+		const path = `${workspacePath}/${filePath}`;
+		if (fs.statSync(path).isFile()) {
+			treeItem.command = {
+				command: 'vscode.open',
+				title: 'open',
+				arguments: [vscode.Uri.file(path)]
+			};
+		}
+		return treeItem;
   }
 
 	getChildren(element: QuickStartContainer1TreeElement) {
@@ -142,14 +152,7 @@ export class QuickStartContainer1TreeElement extends vscode.TreeItem {
     public readonly label: string
   ) {
     super(label);
-  }
-
-	public command = {
-		'command': 'vscode.open',
-		'title': 'open'
-	};
-
-	public resourceUri = vscode.Uri.parse(getFileFullPath('', this));
+	}
 
   get parent(): QuickStartContainer1TreeElement | undefined | null {
     return this._parent;

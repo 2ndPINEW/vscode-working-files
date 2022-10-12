@@ -44,7 +44,7 @@
 					"when": "view == git-working-files",
 					"group": "navigation"
         }
-    ]
+    	]
 		}
 	},
 	"scripts": {
