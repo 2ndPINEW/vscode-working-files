@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:vscode-working-files.helloWorld"
+		"onCommand:vscode-working-files.helloWorld",
+		"onView:git-working-files"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
