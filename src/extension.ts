@@ -9,10 +9,6 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.workspace.onDidSaveTextDocument(() => {
 		wf.makeRootElements();
 	});
-
-	// -------------------------------------------------
-	// ファイルの操作
-	// -------------------------------------------------
 	vscode.workspace.onDidCreateFiles(() => {
 		wf.makeRootElements();
 	});
@@ -22,7 +18,6 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.workspace.onDidRenameFiles(() => {
 		wf.makeRootElements();
 	});
-
 
 	vscode.commands.registerCommand('vscode-working-files.refreshEntry', () =>
 		wf.makeRootElements()
@@ -34,23 +29,23 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 class WorkingFilesView {
-	private _onDidChangeTreeData: vscode.EventEmitter<QuickStartContainer1TreeElement | null> = new vscode.EventEmitter<QuickStartContainer1TreeElement | null>();
-	readonly onDidChangeTreeData: vscode.Event<QuickStartContainer1TreeElement | null> = this
+	private _onDidChangeTreeData: vscode.EventEmitter<TreeElement | null> = new vscode.EventEmitter<TreeElement | null>();
+	readonly onDidChangeTreeData: vscode.Event<TreeElement | null> = this
     ._onDidChangeTreeData.event;
 
-  private rootElements: QuickStartContainer1TreeElement[];
-  constructor() {
-		this.rootElements = [];
-  }
+  private rootElements: TreeElement[] = [];
+	
+  constructor() {}
 
 	async makeRootElements (): Promise<void> {
     this.rootElements = await this.createElements();
 		this.refresh();
 	}
 
-	getTreeItem(element: QuickStartContainer1TreeElement): vscode.TreeItem | Thenable<vscode.TreeItem> {
+	getTreeItem(element: TreeElement): vscode.TreeItem | Thenable<vscode.TreeItem> {
     const collapsibleState = element.children.length > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;
     const treeItem = new vscode.TreeItem(element.name, collapsibleState);
+		
 		const filePath = getFileFullPath('', element);
 		const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri?.path;
 		const path = `${workspacePath}/${filePath}`;
@@ -61,19 +56,20 @@ class WorkingFilesView {
 				arguments: [vscode.Uri.file(path)]
 			};
 		}
+		
 		return treeItem;
   }
 
-	getChildren(element: QuickStartContainer1TreeElement) {
+	getChildren(element: TreeElement) {
 		return element ? element.children : this.rootElements;
 	}
 
-	private async createElements(): Promise<QuickStartContainer1TreeElement[]> {
+	private async createElements(): Promise<TreeElement[]> {
 		const fileNames = await this.getWorkingBranchChangingFiles();
 
 		let result: Obj[] = [];
 		let level = {result};
-		let temp: QuickStartContainer1TreeElement[] = [];
+		let temp: TreeElement[] = [];
 
 		fileNames.forEach(path => {
 			path.split('/').reduce((r: any, name, i, a) => {
@@ -81,22 +77,21 @@ class WorkingFilesView {
 					r[name] = {result: []};
 					r.result.push({name, children: r[name].result});
 				}
-				
 				return r[name];
 			}, level);
 		});
 
 		result.forEach(value => {
-			temp.push(new QuickStartContainer1TreeElement(value.name, value.name));
+			temp.push(new TreeElement(value.name, value.name));
 			this.put(temp.slice(-1)[0], value.children);
 		});
 
 		return temp;
   }
 
-	private put (element: QuickStartContainer1TreeElement, result: Obj[]) {
+	private put (element: TreeElement, result: Obj[]) {
 		result.forEach(a => {
-			element.addChild(new QuickStartContainer1TreeElement(a.name, a.name));
+			element.addChild(new TreeElement(a.name, a.name));
 			this.put(element.children.slice(-1)[0], a.children);
 		});
 	}
@@ -143,9 +138,9 @@ interface Obj {
 	children: Obj[]
 }
 
-export class QuickStartContainer1TreeElement extends vscode.TreeItem {
-  private _children: QuickStartContainer1TreeElement[] = [];
-  private _parent: QuickStartContainer1TreeElement | undefined | null;
+export class TreeElement extends vscode.TreeItem {
+  private _children: TreeElement[] = [];
+  private _parent: TreeElement | undefined | null;
 
   constructor(
 		public name: string,
@@ -154,21 +149,21 @@ export class QuickStartContainer1TreeElement extends vscode.TreeItem {
     super(label);
 	}
 
-  get parent(): QuickStartContainer1TreeElement | undefined | null {
+  get parent(): TreeElement | undefined | null {
     return this._parent;
   }
 
-  get children(): QuickStartContainer1TreeElement[] {
+  get children(): TreeElement[] {
     return this._children;
   }
 
-  addChild(child: QuickStartContainer1TreeElement) {
+  addChild(child: TreeElement) {
     child.parent?.removeChild(child);
     this._children.push(child);
     child._parent = this;
   }
 
-  removeChild(child: QuickStartContainer1TreeElement) {
+  removeChild(child: TreeElement) {
     const childIndex = this._children.indexOf(child);
     if (childIndex >= 0) {
       this._children.splice(childIndex, 1);
@@ -177,7 +172,7 @@ export class QuickStartContainer1TreeElement extends vscode.TreeItem {
   }
 }
 
-function getFileFullPath (path: string, obj: QuickStartContainer1TreeElement) {
+function getFileFullPath (path: string, obj: TreeElement) {
 	path = path ? `${obj.name}/${path}` : obj.name;
 
 	if (obj.parent) {
