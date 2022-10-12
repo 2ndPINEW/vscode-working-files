@@ -1,7 +1,7 @@
 {
 	"name": "vscode-working-files",
 	"displayName": "vscode-working-files",
-	"description": "",
+	"description": "作業中のブランチで変更したファイルを切り替えやすくする拡張機能",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.72.0"
