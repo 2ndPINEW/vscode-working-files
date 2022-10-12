@@ -1,5 +1,5 @@
 {
-  "name": "vscode-working-files",
+	"name": "vscode-working-files",
 	"displayName": "vscode-working-files",
 	"description": "",
 	"version": "0.0.1",
@@ -24,28 +24,40 @@
 			"activitybar": [
 				{
 					"id": "working-files",
-					"title": "Working files",
-					"icon": "media/icon.svg"
+					"title": "作業中のファイル",
+					"icon": "assets/icon.svg"
 				}
 			]
 		},
 		"views": {
 			"working-files": [
-					{
-							"id": "git-working-files",
-							"name": "Working files"
-					}
+				{
+					"id": "git-working-files",
+					"name": "作業中のファイル"
+				}
 			]
 		},
 		"menus": {
 			"view/title": [
-        {
+				{
 					"command": "vscode-working-files.refreshEntry",
 					"when": "view == git-working-files",
 					"group": "navigation"
-        }
-    	]
-		}
+				}
+			]
+		},
+		"keybindings": [
+			{
+				"key": "shift+cmd+e",
+				"command": "workbench.view.explorer",
+				"when": "viewContainer.workbench.view.explorer.enabled"
+			},
+			{
+				"key": "shift+cmd+g",
+				"command": "workbench.view.extension.working-files",
+				"when": "viewContainer.workbench.view.extension.working-files.enabled"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
