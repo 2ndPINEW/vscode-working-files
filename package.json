@@ -2,11 +2,11 @@
 	"name": "vscode-working-files",
 	"displayName": "vscode-working-files",
 	"description": "作業中のブランチで変更したファイルを切り替えやすくする拡張機能",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"engines": {
-		"vscode": "^1.72.0"
+		"vscode": "^1.71.0"
 	},
-	"icon": "/assets/icon.png",
+	"icon": "assets/icon.png",
 	"repository": {
 		"url": "https://github.com/2ndPINEW/vscode-working-files"
 	},
@@ -93,7 +93,7 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.72.0",
+		"@types/vscode": "^1.71.0",
 		"@types/glob": "^7.2.0",
 		"@types/mocha": "^9.1.1",
 		"@types/node": "16.x",
