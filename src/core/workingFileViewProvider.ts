@@ -8,7 +8,7 @@ interface FileTreeObject {
 	children: FileTreeObject[]
 }
 
-export class WorkingFilesViewProvider {
+export class WorkingFilesViewProvider implements vscode.TreeDataProvider<TreeElement> {
 	private _onDidChangeTreeData: vscode.EventEmitter<TreeElement | null> = new vscode.EventEmitter<TreeElement | null>();
 	readonly onDidChangeTreeData: vscode.Event<TreeElement | null> = this._onDidChangeTreeData.event;
 
@@ -34,7 +34,7 @@ export class WorkingFilesViewProvider {
 			return [];
 		}
 
-		const elements = workspaceFolders.map(rootFolder => new TreeElement(`[W] ${rootFolder.name}`, `[W] ${rootFolder.name}`, rootFolder));
+		const elements = workspaceFolders.map(rootFolder => new TreeElement(`${rootFolder.name}`, `${rootFolder.name}`, rootFolder, true));
 
 		for await (const element of elements) {
 			const fileNames = await getWorkspaceChangingFiles(element.rootPath?.uri.path);
@@ -53,12 +53,12 @@ export class WorkingFilesViewProvider {
 			});
 	
 			result.forEach(value => {
-				element.addChild(new TreeElement(value.name, value.name, element.rootPath));
+				element.addChild(new TreeElement(value.name, value.name, element.rootPath, false));
 				this.put(element.children.slice(-1)[0], value.children);
 			});
 
 			if (result.length <= 0) {
-				element.addChild(new TreeElement('差分はありません', '差分はありません', element.rootPath));
+				element.addChild(new TreeElement('差分はありません', '差分はありません', element.rootPath, false));
 			}
 		}
 
@@ -67,7 +67,7 @@ export class WorkingFilesViewProvider {
 
 	private put (element: TreeElement, result: FileTreeObject[]) {
 		result.forEach(a => {
-			element.addChild(new TreeElement(a.name, a.name, element.rootPath));
+			element.addChild(new TreeElement(a.name, a.name, element.rootPath, false));
 			this.put(element.children.slice(-1)[0], a.children);
 		});
 	}
