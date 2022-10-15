@@ -40,6 +40,7 @@ export class TreeElement extends vscode.TreeItem {
 					title: 'open',
 					arguments: [vscode.Uri.file(path)]
 				};
+        this.resourceUri = vscode.Uri.file(path);
 			}
 		} catch {}
   }
