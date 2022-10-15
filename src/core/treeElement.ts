@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as path from 'path';
 
 export class TreeElement extends vscode.TreeItem {
   private _children: TreeElement[] = [];
@@ -11,11 +12,17 @@ export class TreeElement extends vscode.TreeItem {
   constructor(
 		public name: string,
     public readonly label: string,
-		public readonly rootPath?: vscode.WorkspaceFolder
+		public readonly rootPath?: vscode.WorkspaceFolder,
+    public readonly isWorkspace?: boolean
   ) {
     super(label);
     
     this.initializeCollapsibleState();
+
+    this.iconPath = isWorkspace ? {
+      light: path.join(__filename, '..', '..', 'assets', 'icon.svg'),
+      dark: path.join(__filename, '..', '..', 'assets', 'icon.svg')
+    } : undefined;
 	}
 
   initializeCollapsibleState (): void {
