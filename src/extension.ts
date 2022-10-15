@@ -4,7 +4,10 @@ import { WorkingFilesViewProvider } from './core/workingFileViewProvider';
 
 export function activate(_context: vscode.ExtensionContext) {
 	const wf = new WorkingFilesViewProvider();
-	wf.refresh();
+
+	vscode.commands.executeCommand('setContext', 'working-files.loaded', false);
+	vscode.commands.executeCommand('setContext', 'working-files.no-workspace', false);
+	vscode.commands.executeCommand('setContext', 'working-files.deadly', false);
 
 	vscode.workspace.onDidSaveTextDocument(() => {
 		wf.refresh();

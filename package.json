@@ -29,6 +29,23 @@
 				}
 			]
 		},
+		"viewsWelcome": [
+			{
+				"view": "git-working-files",
+				"contents": "Welcome to 'working files'.\nNo workspaces found.",
+				"when": "working-files.loaded && working-files.no-workspace"
+			},
+			{
+				"view": "git-working-files",
+				"contents": "Wait a moment.",
+				"when": "!working-files.loaded"
+			},
+			{
+				"view": "git-working-files",
+				"contents": "Sorry... Internal Error\n🤔",
+				"when": "working-files.deadly"
+			}
+		],
 		"views": {
 			"working-files": [
 				{

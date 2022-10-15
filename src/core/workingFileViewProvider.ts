@@ -14,7 +14,9 @@ export class WorkingFilesViewProvider implements vscode.TreeDataProvider<TreeEle
 
   private rootElements: TreeElement[] = [];
 	
-  constructor() {}
+  constructor() {
+		this.refresh();
+	}
 
 	refresh (): void {
 		this.makeRootElements();
@@ -75,6 +77,13 @@ export class WorkingFilesViewProvider implements vscode.TreeDataProvider<TreeEle
 	private async makeRootElements (): Promise<void> {
     this.rootElements = await this.createElements();
 		this.viewRefresh();
+		vscode.commands.executeCommand('setContext', 'working-files.loaded', true);
+		
+		if (this.rootElements.length <= 0) {
+			vscode.commands.executeCommand('setContext', 'working-files.no-workspace', true);
+		} else {
+			vscode.commands.executeCommand('setContext', 'working-files.no-workspace', false);
+		}
 	}
 	
 	private viewRefresh(): void {
