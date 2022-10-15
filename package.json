@@ -1,13 +1,89 @@
 {
-  "name": "vscode-working-files",
-  "version": "0.0.1",
-  "main": "index.js",
-  "repository": "ssh://git@github.com/2ndPINEW/vscode-working-files.git",
-  "author": "takase <takase@jig.jp>",
-  "license": "MIT",
-  "private": true,
-  "dependencies": {
-    "generator-code": "^1.7.0",
-    "yo": "^4.3.0"
-  }
+	"name": "vscode-working-files",
+	"displayName": "vscode-working-files",
+	"description": "作業中のブランチで変更したファイルを切り替えやすくする拡張機能",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.72.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:git-working-files"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "vscode-working-files.refreshEntry",
+				"title": "Refresh"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "working-files",
+					"title": "作業中のファイル",
+					"icon": "assets/icon.svg"
+				}
+			]
+		},
+		"views": {
+			"working-files": [
+				{
+					"id": "git-working-files",
+					"name": "作業中のファイル"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "vscode-working-files.refreshEntry",
+					"when": "view == git-working-files",
+					"group": "navigation"
+				}
+			]
+		},
+		"keybindings": [
+			{
+				"key": "shift+cmd+e",
+				"command": "workbench.view.explorer",
+				"when": "viewContainer.workbench.view.explorer.enabled"
+			},
+			{
+				"key": "shift+cmd+g",
+				"command": "workbench.view.extension.working-files",
+				"when": "viewContainer.workbench.view.extension.working-files.enabled"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "yarn run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"compile-tests": "tsc -p . --outDir out",
+		"watch-tests": "tsc -p . -w --outDir out",
+		"pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.72.0",
+		"@types/glob": "^7.2.0",
+		"@types/mocha": "^9.1.1",
+		"@types/node": "16.x",
+		"@typescript-eslint/eslint-plugin": "^5.27.0",
+		"@typescript-eslint/parser": "^5.27.0",
+		"eslint": "^8.16.0",
+		"glob": "^8.0.3",
+		"mocha": "^10.0.0",
+		"typescript": "^4.7.2",
+		"ts-loader": "^9.3.0",
+		"webpack": "^5.72.1",
+		"webpack-cli": "^4.9.2",
+		"@vscode/test-electron": "^2.1.3"
+	}
 }
